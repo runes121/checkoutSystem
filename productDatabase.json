@@ -1,0 +1,57 @@
+[
+  {
+    "stock": 5,
+    "name": "iPhone 14",
+    "price": 400
+  },
+  {
+    "stock": 12,
+    "name": "Samsung Galaxy S22",
+    "price": 350
+  },
+  {
+    "stock": 8,
+    "name": "MacBook Air M2",
+    "price": 999
+  },
+  {
+    "stock": 20,
+    "name": "Sony WH-1000XM5 Headphones",
+    "price": 280
+  },
+  {
+    "stock": 15,
+    "name": "Nintendo Switch OLED",
+    "price": 320
+  },
+  {
+    "stock": 7,
+    "name": "Apple iPad Pro",
+    "price": 850
+  },
+  {
+    "stock": 10,
+    "name": "Dell XPS 13 Laptop",
+    "price": 1100
+  },
+  {
+    "stock": 18,
+    "name": "Logitech MX Master 3 Mouse",
+    "price": 95
+  },
+  {
+    "stock": 25,
+    "name": "Amazon Echo Dot (5th Gen)",
+    "price": 50.99
+  },
+  {
+    "stock": 6,
+    "name": "Oculus Quest 2 VR Headset",
+    "price": 399
+  },
+  {
+    "stock": 78,
+    "name": "Carrier bag",
+    "price": 0.2
+  }
+]
