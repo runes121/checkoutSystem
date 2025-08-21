@@ -101,82 +101,85 @@ action_container.grid(column=1, row=0, rowspan=2, sticky="nsew", padx=0, pady=0)
 action_container.grid_propagate(False)
 
 def checkout():
-    checkout = tk.Toplevel(root)
-    checkout.geometry("1500x900")
-    checkout.title("Transaction Payment")
-    checkout.grab_set()
-    checkout.focus_set()
-    checkout.transient(root)
+    if len(basket) > 0:
+        checkout = tk.Toplevel(root)
+        checkout.geometry("1500x900")
+        checkout.title("Transaction Payment")
+        checkout.grab_set()
+        checkout.focus_set()
+        checkout.transient(root)
 
-    checkout.grid_columnconfigure(0, minsize=750)
-    checkout.grid_columnconfigure(1, minsize=750)
+        checkout.grid_columnconfigure(0, minsize=750)
+        checkout.grid_columnconfigure(1, minsize=750)
 
-    product_listCheckout = tk.Frame(checkout, width="750", height="900")
-    product_listCheckout.grid(column=0, sticky="nsew", padx=0, pady=0)
-    product_listCheckout.grid_propagate(False)
+        product_listCheckout = tk.Frame(checkout, width="750", height="900")
+        product_listCheckout.grid(column=0, sticky="nsew", padx=0, pady=0)
+        product_listCheckout.grid_propagate(False)
 
-    for product in basket:
+        for product in basket:
+            border = tk.Frame(product_listCheckout, bd=2, bg="black")
+            border.pack(fill="x")
+            label = tk.Label(border, text=f"{product['name']} | {product['quantity']}", font=font.Font(size=13), anchor="w")
+            label.pack(fill="x", padx=1, pady=1)
+
         border = tk.Frame(product_listCheckout, bd=2, bg="black")
         border.pack(fill="x")
-        label = tk.Label(border, text=f"{product['name']} | {product['quantity']}", font=font.Font(size=13), anchor="w")
-        label.pack(fill="x", padx=1, pady=1)
+        outstanding_balance = sum([basketItem['price'] * basketItem['quantity'] for basketItem in basket])
+        totalLabel = tk.Label(border, text=f"Total: £{outstanding_balance:.2f}", anchor="w", font=font.Font(weight="bold", size=17), bg="white")
+        totalLabel.pack(side="bottom", fill="x")
 
-    border = tk.Frame(product_listCheckout, bd=2, bg="black")
-    border.pack(fill="x")
-    outstanding_balance = sum([basketItem['price'] * basketItem['quantity'] for basketItem in basket])
-    totalLabel = tk.Label(border, text=f"Total: £{outstanding_balance:.2f}", anchor="w", font=font.Font(weight="bold", size=17), bg="white")
-    totalLabel.pack(side="bottom", fill="x")
+        outstanding_label = tk.Label(checkout, text=f"DUE: £{outstanding_balance:.2f}", font=font.Font(size=30))
+        outstanding_label.grid(column=1, row=0, sticky="nsew", padx=0, pady=0)
 
-    outstanding_label = tk.Label(checkout, text=f"DUE: £{outstanding_balance:.2f}", font=font.Font(size=30))
-    outstanding_label.grid(column=1, row=0, sticky="nsew", padx=0, pady=0)
+        def deductCash(amount):
+            nonlocal outstanding_balance
+            outstanding_balance -= amount
+            if outstanding_balance > 0:
+                outstanding_label.config(text=f"DUE: £{outstanding_balance:.2f}")
+            elif outstanding_balance < 0:
+                outstanding_label.config(text=f"CHANGE: £{abs(outstanding_balance):.2f}")
+                messagebox.showinfo("Transaction complete", "The transaction is now complete, you may close this window!")
 
-    def deductCash(amount):
-        nonlocal outstanding_balance
-        outstanding_balance -= amount
-        if outstanding_balance > 0:
-            outstanding_label.config(text=f"DUE: £{outstanding_balance:.2f}")
-        elif outstanding_balance < 0:
-            outstanding_label.config(text=f"CHANGE: £{abs(outstanding_balance):.2f}")
+        quickCashFrame = tk.Frame(checkout)
+        quickCashFrame.grid(column=1, padx=0, pady=0)
+
+        quickOnePound = tk.Button(quickCashFrame, text="£1", bg="beige", font=font.Font(size=20), command=lambda: deductCash(1))
+        quickOnePound.grid(column=1, row=1, padx=0, pady=0)
+        quickFivePound = tk.Button(quickCashFrame, text="£5", bg="beige", font=font.Font(size=20), command=lambda: deductCash(5))
+        quickFivePound.grid(column=2, row=1, padx=0, pady=0)
+        quickTenPound = tk.Button(quickCashFrame, text="£10", bg="beige", font=font.Font(size=20), command=lambda: deductCash(10))
+        quickTenPound.grid(column=3, row=1,padx=0, pady=0)
+        quickTwentyPound = tk.Button(quickCashFrame, text="£20", bg="beige", font=font.Font(size=20), command=lambda: deductCash(20))
+        quickTwentyPound.grid(column=4, row=1, padx=0, pady=0)
+
+        enterValueContainer = tk.Frame(checkout)
+        enterValueContainer.grid(column=1, padx=5)
+        enterValueContainer.columnconfigure(0, weight=3)
+        enterValueContainer.columnconfigure(1, weight=2)
+        exactValue = tk.Entry(enterValueContainer, font=font.Font(size=17))
+        exactValue.grid(column=0, row=0, sticky="nsew")
+
+        def deductExact():
+            try:
+                toDeduct = float(exactValue.get())
+                deductCash(toDeduct)
+            except ValueError:
+                messagebox.showerror("Incorrect value", "Please enter a decimal value into the input box.")
+
+        enterExactValue = tk.Button(enterValueContainer, bg="green", text="Deduct", font=font.Font(size=17), command=deductExact)
+        enterExactValue.grid(column=1, row=0, sticky="nsew")
+
+        def paymentFinish():
+            outstanding_label.config(text=f"Card payment successful!")
             messagebox.showinfo("Transaction complete", "The transaction is now complete, you may close this window!")
 
-    quickCashFrame = tk.Frame(checkout)
-    quickCashFrame.grid(column=1, padx=0, pady=0)
+        def payCard():
+            outstanding_label.config(text=f"Awaiting card payment of £{outstanding_balance:.2f}...")
+            checkout.after(3000, paymentFinish)
 
-    quickOnePound = tk.Button(quickCashFrame, text="£1", bg="beige", font=font.Font(size=20), command=lambda: deductCash(1))
-    quickOnePound.grid(column=1, row=1, padx=0, pady=0)
-    quickFivePound = tk.Button(quickCashFrame, text="£5", bg="beige", font=font.Font(size=20), command=lambda: deductCash(5))
-    quickFivePound.grid(column=2, row=1, padx=0, pady=0)
-    quickTenPound = tk.Button(quickCashFrame, text="£10", bg="beige", font=font.Font(size=20), command=lambda: deductCash(10))
-    quickTenPound.grid(column=3, row=1,padx=0, pady=0)
-    quickTwentyPound = tk.Button(quickCashFrame, text="£20", bg="beige", font=font.Font(size=20), command=lambda: deductCash(20))
-    quickTwentyPound.grid(column=4, row=1, padx=0, pady=0)
-
-    enterValueContainer = tk.Frame(checkout)
-    enterValueContainer.grid(column=1, padx=5)
-    enterValueContainer.columnconfigure(0, weight=3)
-    enterValueContainer.columnconfigure(1, weight=2)
-    exactValue = tk.Entry(enterValueContainer, font=font.Font(size=17))
-    exactValue.grid(column=0, row=0, sticky="nsew")
-
-    def deductExact():
-        try:
-            toDeduct = float(exactValue.get())
-            deductCash(toDeduct)
-        except ValueError:
-            messagebox.showerror("Incorrect value", "Please enter a decimal value into the input box.")
-
-    enterExactValue = tk.Button(enterValueContainer, bg="green", text="Deduct", font=font.Font(size=17), command=deductExact)
-    enterExactValue.grid(column=1, row=0, sticky="nsew")
-
-    def paymentFinish():
-        outstanding_label.config(text=f"Card payment successful!")
-        messagebox.showinfo("Transaction complete", "The transaction is now complete, you may close this window!")
-
-    def payCard():
-        outstanding_label.config(text=f"Awaiting card payment of £{outstanding_balance:.2f}...")
-        checkout.after(3000, paymentFinish)
-
-    tk.Button(checkout, bg="lightgreen", text="Card", font=font.Font(size=17), command=payCard).grid(column=1, row=3, sticky="nsew", pady="5")
+        tk.Button(checkout, bg="lightgreen", text="Card", font=font.Font(size=17), command=payCard).grid(column=1, row=3, sticky="nsew", pady="5")
+    else:
+        messagebox.showerror("Invalid action", "Cannot complete a transaction with an empty basket.")
 
 finish_and_pay = tk.Button(action_container, bg="lightgreen", font=font.Font(size=20), text="Collect payment", command=checkout)
 finish_and_pay.pack(fill="x", padx="5", pady=(0,5))
